@@ -50,3 +50,5 @@ if ($results) {
     $results | Export-Csv -Path "Detective_Scan_Results.csv" -NoTypeInformation
     Write-Host "`n[+] The review was conducted. Results also saved to Detective_Scan_Results.csv" -ForegroundColor Green
 } else {
+    Write-Host "`n[-] No cheats were found." -ForegroundColor Yellow
+}
