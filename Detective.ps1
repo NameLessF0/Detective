@@ -1,5 +1,5 @@
 Write-Host "`nDetective by NameLessF0" -ForegroundColor Black
-Write-Host "`nGitHub: https://github.com/NameLess0" -ForegroundColor White
+Write-Host "`nGitHub: https://github.com/NameLessF0" -ForegroundColor White
 Write-Host "`nDiscord: https://discord.gg/k7hcQKRXQt" -ForegroundColor Blue
 Write-Host "`nRunning the script..." -ForegroundColor Red
 
