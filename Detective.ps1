@@ -1,29 +1,52 @@
 Write-Host "`nDetective by NameLessF0" -ForegroundColor Black
 Write-Host "`nGitHub: https://github.com/NameLessF0" -ForegroundColor White
 Write-Host "`nDiscord: https://discord.gg/k7hcQKRXQt" -ForegroundColor Blue
-Write-Host "`nRunning the script..." -ForegroundColor Red
+Write-Host "`nAwaking the Detective..." -ForegroundColor Red
 
-$extensions = @("*.jar", "*.bat", "*.exe", "*.dll")
-$drives = Get-PSDrive -PSProvider FileSystem
+# Target strings to look for
+$targetStrings = @(
+    "CrystalAura", "AutoCrystal", "OneHitCrystal", "AutoStun", "StunSlam", 
+    "AutoTotem", "InventoryTotem", "InvMove", "TriggerBot", "MaceDMG", 
+    "ShieldBreaker", "AutoPot", "HitBox", "Stun-Slam", "CrystalOptimizer", "AnchorMacro"
+)
 
-$results = foreach ($drive in $drives) {
-   Write-Host "Scanning $($drive.Root)..." -ForegroundColor Gray
-   Get-ChildItem -Path "$($drive.Root)\*" -Include $extensions -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
-       [PSCustomObject]@{
-           Name        = $_.Name
-           Location    = $_.FullName
-           LastAccess  = $_.LastAccessTime
-       }
-   }
-}
+# File extensions to scan
+$extensions = @("*.exe", "*.dll", "*.bat", "*.jar")
 
+# Get all file system drives
+$drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
+
+# Parallel scanning for maximum speed
+$results = $drives | ForEach-Object -Parallel {
+    $root = $_
+    $exts = $using:extensions
+    $strings = $using:targetStrings
+    
+    Write-Host "Scanning $root..." -ForegroundColor Gray
+    
+    # Scan files including Hidden and System attributes
+    Get-ChildItem -Path "$root\*" -Include $exts -Recurse -Force -ErrorAction SilentlyContinue | ForEach-Object {
+        $filePath = $_.FullName
+        
+        # Search for the target strings inside the file content
+        $match = Select-String -Path $filePath -Pattern $strings -ErrorAction SilentlyContinue | Select-Object -First 1
+        
+        if ($match) {
+            [PSCustomObject]@{
+                Name   = $_.Name
+                Location = $filePath
+                Cheat  = $match.Pattern
+            }
+        }
+    }
+} -ThrottleLimit 8
+
+# Output results
 if ($results) {
-   # Displaying as a list/table in the console
-  $results | Format-Table -AutoSize
+    Write-Host "`n[!] CHEATS FOUND:" -ForegroundColor Cyan
+    $results | Format-Table -AutoSize
 
-   # Still saving to CSV in case the list is too long to scroll through
-   $results | Export-Csv -Path "SystemFileScan.csv" -NoTypeInformation
-   Write-Host "`nScan complete! Results also saved to SystemFileScan.csv" -ForegroundColor Green
+    # Save results to CSV
+    $results | Export-Csv -Path "Detective_Scan_Results.csv" -NoTypeInformation
+    Write-Host "`n[+] The review was conducted. Results also saved to Detective_Scan_Results.csv" -ForegroundColor Green
 } else {
-   Write-Host "`nNo matching files found." -ForegroundColor Yellow
- }
