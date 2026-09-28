@@ -21,7 +21,6 @@ $results = $drives | ForEach-Object -Parallel {
     $root = $_
     $exts = $using:extensions
     $strings = $using:targetStrings
-    }
     
     Write-Host "Scanning $root..." -ForegroundColor Gray
     
